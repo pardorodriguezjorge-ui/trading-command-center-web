@@ -15,7 +15,7 @@ Actualización del 11 de octubre de 2026. **Código incorporado; proveedor de da
 | Macro | Sin feed | Pendiente de fase posterior |
 | Informes horarios ChatGPT | Importación JSON manual | Fase 3; no hay puente automático |
 
-La web comprueba ambos archivos cada 10 minutos mientras permanece abierta y al volver a la pestaña. Sin archivos nuevos no hay cambios de precios. Muestra fecha, procedencia y antigüedad por ticker en **Datos y ajustes**. Los widgets intradía 1H/4H son de TradingView y no actualizan la serie diaria local.
+La web comprueba ambos archivos cada minuto mientras permanece abierta y al volver a la pestaña. Sin archivos nuevos no hay cambios de precios. Muestra fecha, procedencia y antigüedad por ticker en **Datos y ajustes**. Los widgets intradía 1H/4H son de TradingView y no actualizan la serie diaria local.
 
 ## Fuente y derechos
 
