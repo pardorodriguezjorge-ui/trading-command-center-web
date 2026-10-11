@@ -1,0 +1,14 @@
+{
+  "name": "swing-market-console",
+  "main": "worker/private-market.js",
+  "compatibility_date": "2026-10-10",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/data/market.json", "/data/history.json"]
+  },
+  "triggers": {
+    "crons": ["*/5 12-23 * * MON-FRI", "20 0 * * TUE-SAT"]
+  }
+}
