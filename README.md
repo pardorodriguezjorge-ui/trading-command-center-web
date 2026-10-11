@@ -11,7 +11,9 @@ Centro local de decisiones para swing trading, modular, sin build de producción
 - TradingView externo para intradía y adaptador de cotizaciones + OHLCV automático **preparado, pero desactivado** hasta verificar derechos de publicación del proveedor.
 - Auditoría de procedencia, fecha y antigüedad de cada cotización; actualización del navegador cada diez minutos cuando el feed esté activo.
 
-`npm ci && npm test && npm run check`
+`npm ci && npm run check && npm test` · `npm run build` crea la carpeta `dist/` (solo recursos públicos) preparada para un host con nombre genérico.
+
+Para publicar sin el usuario de GitHub en la URL, el repositorio incluye `vercel.json`. **La URL genérica no está activada**: falta conectar el alojamiento y confirmar el nombre libre.
 
 [Auditoría](docs/AUDIT.md) · [Operación y límites](docs/OPERATIONS.md) · [Fase 1: fuentes, estado real y URL genérica](docs/PHASE1.md)
 
