@@ -31,7 +31,7 @@ Para sincronización desatendida real: backend autenticado con endpoint de infor
 
 ## Mercado horario opcional
 
-Se incluye un adaptador Twelve Data y workflow al minuto 17 de cada hora, de lunes a viernes UTC. Está deshabilitado hasta configurar:
+Se incluye un adaptador Twelve Data: cotizaciones a HH:17 entre las 13:00 y las 22:00 UTC, y velas diarias a las 23:43 UTC, de lunes a viernes. Ambos están desactivados hasta verificar licencia de redistribución. Más detalle en [Fase 1](PHASE1.md). Está deshabilitado hasta configurar:
 
 1. Un plan del proveedor que permita los símbolos y la redistribución pública requerida; revisar costes y licencia.
 2. Secret TWELVE_DATA_API_KEY.
@@ -39,7 +39,7 @@ Se incluye un adaptador Twelve Data y workflow al minuto 17 de cada hora, de lun
 4. GitHub Pages con origen GitHub Actions si se usa el despliegue del workflow.
 5. Ejecutar workflow_dispatch y verificar logs y data/market.json publicado.
 
-El script exige todas las cotizaciones válidas antes de sustituir el snapshot; no imprime la clave ni mensajes del proveedor que puedan incluirla. Solo publica cotizaciones de mercado, nunca posiciones. La fecha de captura no equivale a fecha de cotización: ambas se conservan. La interfaz muestra el snapshot por separado para no sustituir silenciosamente precios manuales. Esta integración NO ha sido probada con una clave real ni está activada.
+El script de cotizaciones exige al menos cinco respuestas recientes válidas; conserva los precios previos y sus fechas para símbolos fallidos, y registra errores genéricos. El script de velas exige series diarias válidas antes de sustituir su archivo. Nunca imprime la clave. Solo publica cotizaciones de mercado, nunca posiciones. La fecha de captura no equivale a fecha de cotización: ambas se conservan. La interfaz muestra el snapshot por separado para no sustituir silenciosamente precios manuales. Esta integración NO ha sido probada con una clave real ni está activada.
 
 GitHub Actions puede retrasar u omitir tareas por carga; un cron horario no garantiza puntualidad. En repositorios públicos puede desactivarse tras 60 días sin actividad. No es adecuado para stops, alertas críticas o ejecución.
 
