@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html manifest.webmanifest sw.js icon.svg .nojekyll dist/
-          cp -r src data docs dist/
+          cp -r src data docs vendor dist/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
