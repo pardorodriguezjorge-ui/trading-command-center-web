@@ -73,9 +73,12 @@ async function updateQuotes(env,ms){
  if(!env.MARKET_KV||!isRegularSession(ms))return;
  const existing=await env.MARKET_KV.get('quotes','json').catch(()=>null);
  const quotes={...(existing?.quotes||{})};
- // Five symbols every 5 minutes. Each symbol targeted once per 10 minutes.
+ // Personal Finnhub access can query all 10 symbols in each 5-minute cycle.
+ // Twelve Data's 8-credit/min Basic limit requires 5-symbol rotating batches.
  const minute=new Date(ms).getUTCMinutes();
- const batch=minute%10<5?TICKERS.slice(0,5):TICKERS.slice(5);
+ const batch=env.QUOTE_PROVIDER==='finnhub'
+  ? TICKERS
+  : minute%10<5?TICKERS.slice(0,5):TICKERS.slice(5);
  const answers=await Promise.all(batch.map(t=>queryQuote(t,env)));
  let successes=0;
  batch.forEach((t,i)=>{
