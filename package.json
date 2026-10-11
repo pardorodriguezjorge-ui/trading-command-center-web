@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check src/app.js && node --check src/core.js && node --check src/terminal.js && node --check src/technical.js"
+    "check": "node --check src/app.js && node --check src/core.js && node --check src/terminal.js && node --check src/technical.js && node --check scripts/update-market.mjs && node --check scripts/update-history.mjs && node --check tests/market.test.js"
   },
   "devDependencies": {
     "jsdom": "^26.1.0"
