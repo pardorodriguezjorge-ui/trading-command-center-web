@@ -12,19 +12,19 @@ function latestQuote(t){
  const stock=research.stocks[t], last=analyses[t]?.last;
  const daily=last?{price:last.close,asof:last.time+'T20:00:00Z',source:stock?.sourceName||'Captura histórica',kind:'daily'}:null;
  const q=liveQuotes?.quotes?.[t];
- return q&&Number(q.price)>0&&asOfMs(q.asof)>asOfMs(daily?.asof)
+ return q&&Number(q.price)>0&&(asOfMs(q.asof)>asOfMs(daily?.asof)||q.asof.slice(0,10)===last?.time)
   ? {price:Number(q.price),asof:q.asof,source:q.source||liveQuotes.source||'Fuente externa',changePct:q.changePct,kind:'quote'}:daily;
 }
 export function ingestQuotes(payload){
- if(payload?.schemaVersion!==1||!payload.quotes||asOfMs(payload.updated_at)<=0)return false;
- let count=0;
+ if(payload?.schemaVersion!==1||!payload.quotes||asOfMs(payload.updated_at)<=0||asOfMs(payload.updated_at)>Date.now()+60000)return false;
+ const quotes={...(liveQuotes?.quotes||{})};let count=0;
  for(const [t,q] of Object.entries(payload.quotes)){
-  if(!/^[A-Z0-9.^=-]{1,15}$/.test(t)||!(Number(q?.price)>0)||asOfMs(q?.asof)<=0)continue;
-  count++;
+  if(!/^[A-Z0-9.^=-]{1,15}$/.test(t)||!(Number(q?.price)>0)||!Number.isFinite(Number(q?.price))||asOfMs(q?.asof)<=0||asOfMs(q.asof)>Date.now()+60000)continue;
+  if(quotes[t]&&asOfMs(q.asof)<asOfMs(quotes[t].asof))continue;
+  quotes[t]=q;count++;
  }
  if(!count)return false;
- liveQuotes=payload;
- return true;
+ liveQuotes={...payload,quotes};return true;
 }
 export function ingestHistory(payload){
  if(payload?.schemaVersion!==1||!payload.stocks||typeof payload.stocks!=='object')return false;
@@ -41,7 +41,7 @@ export function ingestHistory(payload){
    stock.candles=bars;stock.asof=last.time;
    stock.sourceName=s.sourceName||payload.source||'Proveedor externo';
    stock.source=s.source||'';
-   stock.low52=Math.min(...lows);stock.high52=Math.max(...highs);
+   stock.low52=recent.length>=252?Math.min(...lows):null;stock.high52=recent.length>=252?Math.max(...highs):null;
    stock.rangeAsOf=last.time;stock.rangeSource=stock.source;stock.rangeSourceName=stock.sourceName;
    stock.supportZones=f(a.low20)+' / '+f(a.low50);
    stock.resistanceZones=f(a.high20)+' / '+f(a.high50);
@@ -66,7 +66,7 @@ export function marketCoverage(){
   const newest=new Date(q?.asof||stock.asof+'T20:00:00Z');
   const ageHours=Number.isFinite(newest.getTime())?Math.max(0,Math.round((Date.now()-newest.getTime())/3600000)):null;
   return {ticker,price:q?.price??null,quoteAsOf:q?.asof||null,dailyAsOf:stock.asof,
-   source:q?.source||stock.sourceName,ageHours,historyMode:stock.liveHistory?'Automático':'Captura manual'};
+   source:q?.source||stock.sourceName,ageHours,ageMinutes:Number.isFinite(newest.getTime())?Math.max(0,Math.round((Date.now()-newest.getTime())/60000)):null,historyMode:stock.liveHistory?'Automático':'Captura manual'};
  });
 }
 export const viewPosition=p=>{
@@ -84,7 +84,7 @@ function providerTicker(){
 }
 export function tickerTape(){return `<div class="ticker-tape" aria-label="Cotizaciones fechadas; consultar antigüedad"><span class="sr-only">Las cotizaciones pueden estar retrasadas.</span>${Object.entries(analyses).map(([t,a])=>{const q=latestQuote(t);return `<button data-select-ticker="${t}" title="${esc(q?.source||'Sin fuente')} · ${esc(q?.asof||'Sin fecha')}"><b>${t}</b><span>${usd(q?.price)}</span><em class="${color(q?.changePct??a.change)}">${pct(q?.changePct??a.change)}</em></button>`;}).join('')}</div>`;}
 function spark(s){const v=s.candles.slice(-20).map(b=>b.close),min=Math.min(...v),max=Math.max(...v),range=max-min||1;return `<svg class="mini-spark" viewBox="0 0 120 34" aria-label="Últimos veinte cierres" role="img"><polyline fill="none" stroke="${v.at(-1)>=v[0]?'#54d4b5':'#ed8298'}" stroke-width="2" points="${v.map((p,i)=>`${i*120/(v.length-1)},${30-(p-min)/range*26}`).join(' ')}"/></svg>`;}
-function rangeBar(s,a){if(s.low52===null||s.high52===null)return '<small>Máximo anual en revisión por discrepancia entre fuentes.</small>';const width=Math.max(0,Math.min(100,(a.last.close-s.low52)/(s.high52-s.low52)*100));return `<div class="range-caption"><span>Mín. 52 sem. ${usd(s.low52)}</span><span>${usd(s.high52)} Máx.</span></div><div class="range-track"><i style="left:${width}%"></i></div>`;}
+function rangeBar(s,a){if(s.low52===null||s.high52===null)return '<small>Rango anual no disponible: muestra insuficiente o fuente en revisión.</small>';const width=Math.max(0,Math.min(100,(a.last.close-s.low52)/(s.high52-s.low52)*100));return `<div class="range-caption"><span>Mín. 52 sem. ${usd(s.low52)}</span><span>${usd(s.high52)} Máx.</span></div><div class="range-track"><i style="left:${width}%"></i></div>`;}
 export function newsCard(n,compact=false){return `<article class="news-item ${compact?'compact':''}"><div class="row between">${pill(n.ticker)}<small>${esc(n.date.slice(0,10))} · ${esc(n.importance)}</small></div><h3>${esc(n.title)}</h3><p>${esc(n.impact)}</p>${compact?'':`<div class="implication"><small>LECTURA OPERATIVA · INTERPRETACIÓN</small><p>${esc(n.consequence)}</p></div>`}<div class="row between"><small>${sourceLink(n.url,n.sourceName||'Fuente')}</small>${pill(n.confirmed,n.confirmed==='Pendiente de verificar'?'warn':'')}</div></article>`;}
 let selected='CRML',count=50,externalInterval='D';const options={levels:true,ma:true,volume:true,rsi:false,macd:false};let charts=[],observer=null;
 export function selectTicker(t){if(research.stocks[t]){selected=t;externalInterval='D';}}
