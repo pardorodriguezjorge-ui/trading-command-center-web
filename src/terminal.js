@@ -43,8 +43,8 @@ export function ingestHistory(payload){
    stock.source=s.source||'';
    stock.low52=Math.min(...lows);stock.high52=Math.max(...highs);
    stock.rangeAsOf=last.time;stock.rangeSource=stock.source;stock.rangeSourceName=stock.sourceName;
-   stock.supportZones=f(a.low20)+' (20D) / '+f(a.low50)+' (50D)';
-   stock.resistanceZones=f(a.high20)+' (20D) / '+f(a.high50)+' (50D)';
+   stock.supportZones=f(a.low20)+' / '+f(a.low50);
+   stock.resistanceZones=f(a.high20)+' / '+f(a.high50);
    stock.levelsMethod='Extremos mecánicos de 20 y 50 sesiones, NO zonas de soporte/resistencia confirmadas. Revisar estructura, volumen y cierres antes de operar.';
    stock.levelsAsOf=last.time;
    stock.qualityNote='Serie OHLCV automática del proveedor identificado; revisar huecos, splits, volumen y derechos de redistribución.';
