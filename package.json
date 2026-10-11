@@ -1,1 +1,15 @@
-{"name":"swing-command-center","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.js","check":"node --check src/app.js && node --check src/core.js"},"devDependencies":{"jsdom":"^26.1.0"}}
+{
+  "name": "swing-command-center",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check src/app.js && node --check src/core.js && node --check src/terminal.js && node --check src/technical.js"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  },
+  "dependencies": {
+    "lightweight-charts": "^4.2.3"
+  }
+}

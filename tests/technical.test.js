@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import research from '../data/research.js';
+import {validateCandles,technical,sma,ema,rsi,recentNews,chooseQuote} from '../src/technical.js';
+test('ocho series reales: 50 sesiones válidas y cierre 9 octubre',()=>{assert.equal(Object.keys(research.stocks).length,8);for(const s of Object.values(research.stocks)){assert.equal(s.candles.length,50);validateCandles(s.candles);assert.equal(s.candles.at(-1).time,'2026-10-09');}});
+test('pivotes CRML y volumen relativo calculados de la serie',()=>{const a=technical(research.stocks.CRML.candles);assert.equal(a.last.close,6.86);assert.ok(Math.abs(a.pivot-6.803333333333334)<1e-10);assert.ok(Math.abs(a.s1-6.666666666666668)<1e-10);assert.ok(a.relativeVolume>0);});
+test('indicadores no rellenan periodos sin muestra',()=>{assert.deepEqual(sma([1,2,3,4],3),[null,null,2,3]);assert.deepEqual(ema([1,2,3,4],3),[null,null,2,3]);const flat=Array(50).fill(10);assert.equal(rsi(flat).at(-1),50);assert.equal(rsi(Array.from({length:50},(_,i)=>i+1)).at(-1),100);});
+test('MACD constante da cero; sin inventar valores iniciales',()=>{const b=Array.from({length:50},(_,i)=>({time:new Date(Date.UTC(2026,0,1+i)).toISOString().slice(0,10),open:10,high:11,low:9,close:10,volume:100}));const a=technical(b);assert.equal(a.macd[24],null);assert.equal(a.signal[32],null);assert.equal(a.macd.at(-1),0);assert.equal(a.signal.at(-1),0);});
+test('noticias excluyen fechas viejas, futuras y conservan hoy',()=>{const list=[{date:'2026-10-02'},{date:'2026-10-05'},{date:'2026-10-11'},{date:'2026-10-12'}];assert.deepEqual(recentNews(list,new Date('2026-10-11T01:00Z')).map(n=>n.date),['2026-10-11','2026-10-05']);assert.equal(recentNews(research.news,new Date('2026-10-11T01:00Z')).length,8);});
+test('cotización pública no modifica local y respeta precio manual más reciente',()=>{const p={ticker:'CRML',qty:350,avg:7.56,price:null};const v=chooseQuote(p,research.stocks.CRML);assert.equal(v.price,6.86);assert.equal(p.price,null);assert.equal(chooseQuote({...p,price:7,priceAt:'2026-10-10T00:00:00Z'},research.stocks.CRML).price,7);});
+test('no se utiliza un máximo anual contradictorio',()=>{assert.equal(research.stocks.NTNX.high52,null);assert.match(research.stocks.NTNX.qualityNote,/conflicto/);});
