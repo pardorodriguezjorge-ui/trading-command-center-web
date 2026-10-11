@@ -1,4 +1,4 @@
-const CACHE='swing-shell-v4-4';
+const CACHE='swing-shell-private-diagnostics-1';
 const SHELL=['./','./index.html','./src/app.js','./src/terminal.js','./src/technical.js','./data/research.js','./vendor/lightweight-charts-4.2.3.js','./src/core.js','./src/seed.js','./src/style.css','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('swing-shell-')&&k!==CACHE).map(k=>caches.delete(k))))));

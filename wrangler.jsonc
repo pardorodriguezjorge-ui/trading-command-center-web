@@ -6,9 +6,16 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/data/market.json", "/data/history.json"]
+    "run_worker_first": [
+      "/data/market.json",
+      "/data/history.json",
+      "/data/status.json"
+    ]
   },
   "triggers": {
-    "crons": ["*/5 12-23 * * MON-FRI", "20 0 * * TUE-SAT"]
+    "crons": [
+      "*/5 12-23 * * MON-FRI",
+      "20 0 * * TUE-SAT"
+    ]
   }
 }
