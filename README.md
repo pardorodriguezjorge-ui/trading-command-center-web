@@ -1,6 +1,6 @@
 # Swing Trading Command Center
 
-Centro local de decisiones para swing trading, modular, sin build de producción. Compatible con GitHub Pages bajo subdirectorio.
+Centro local de decisiones para swing trading, modular, con build estático opcional. Compatible con GitHub Pages bajo subdirectorio.
 
 - Panel, posiciones, órdenes y ejecuciones con coste ponderado y comisiones.
 - Radar, filtros, setups y playbook versionados.
