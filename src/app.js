@@ -76,7 +76,7 @@ async function refreshSnapshot(){
  if(changed||active==='settings')render();
 }
 refreshSnapshot();
-setInterval(refreshSnapshot,600000);
+setInterval(refreshSnapshot,60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSnapshot();});
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-select-ticker],[data-open-chart]');if(!b)return;selectTicker(b.dataset.selectTicker||b.dataset.openChart);if(b.dataset.openChart){location.hash='charts';navigate();}else render();});
