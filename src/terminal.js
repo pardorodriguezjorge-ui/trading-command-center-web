@@ -16,10 +16,10 @@ function latestQuote(t){
   ? {price:Number(q.price),asof:q.asof,source:q.source||liveQuotes.source||'Fuente externa',changePct:q.changePct,kind:'quote'}:daily;
 }
 export function ingestQuotes(payload){
- if(payload?.schemaVersion!==1||!payload.quotes||!Number.isFinite(asOfMs(payload.updated_at)))return false;
+ if(payload?.schemaVersion!==1||!payload.quotes||asOfMs(payload.updated_at)<=0)return false;
  let count=0;
  for(const [t,q] of Object.entries(payload.quotes)){
-  if(!/^[A-Z0-9.^=-]{1,15}$/.test(t)||!(Number(q?.price)>0)||!Number.isFinite(asOfMs(q?.asof)))continue;
+  if(!/^[A-Z0-9.^=-]{1,15}$/.test(t)||!(Number(q?.price)>0)||asOfMs(q?.asof)<=0)continue;
   count++;
  }
  if(!count)return false;
