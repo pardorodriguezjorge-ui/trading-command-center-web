@@ -1,0 +1,45 @@
+name: Optional hourly market snapshot
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * 1-5'
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: market-snapshot
+  cancel-in-progress: false
+jobs:
+  snapshot:
+    if: vars.ENABLE_MARKET_SYNC == 'true' && vars.MARKET_DATA_PUBLICATION_APPROVED == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/update-market.mjs
+        env:
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+          MARKET_DATA_PUBLICATION_APPROVED: ${{ vars.MARKET_DATA_PUBLICATION_APPROVED }}
+      - name: Commit public snapshot
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/market.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'data: refresh validated market snapshot'
+          git push
+      - name: Prepare public site
+        run: |
+          mkdir -p dist
+          cp index.html manifest.webmanifest sw.js icon.svg .nojekyll dist/
+          cp -r src data docs dist/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - uses: actions/deploy-pages@v4
