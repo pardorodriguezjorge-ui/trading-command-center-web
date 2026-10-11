@@ -17,9 +17,9 @@ La aplicación no enlaza a ningún perfil personal. No se insertan secretos ni t
 
 ## Flujo previsto y presupuesto gratuito
 
-`wrangler.jsonc` programa un intento cada cinco minutos durante el horario ampliado UTC; el Worker comprueba horario ordinario de Nueva York (considerando horario de verano). Alterna dos grupos de cinco símbolos, por lo que **cada ticker se consulta aproximadamente cada diez minutos** mientras el mercado está abierto. 10 símbolos × 6 peticiones/hora × 6,5 h = 390 consultas al día, antes de errores o consultas de velas.
+`wrangler.jsonc` programa un intento cada cinco minutos durante el horario ampliado UTC; el Worker comprueba horario ordinario de Nueva York (considerando horario de verano). Si `QUOTE_PROVIDER=finnhub`, consulta **los diez símbolos cada cinco minutos** (aprox. 780 llamadas en 6,5 horas). Si `QUOTE_PROVIDER=twelvedata`, alterna dos grupos de cinco: **cada ticker se consulta cada diez minutos** (aprox. 390 llamadas en 6,5 horas). La web consulta el snapshot cada minuto mientras está abierta.
 
-Cloudflare Workers KV almacena la última respuesta válida. En el nivel gratuito, KV contempla 1.000 escrituras y 100.000 lecturas diarias, suficiente en principio para uso individual moderado. La tasa efectiva depende de ejecuciones, proveedor y límites vigentes.
+Cloudflare Workers KV almacena la última respuesta válida. La antigüedad objetivo de 5–10 minutos se refiere a la frecuencia de peticiones; la antigüedad efectiva de la cotización depende de la fuente (y puede ser mayor). En el nivel gratuito, KV contempla 1.000 escrituras y 100.000 lecturas diarias, suficiente en principio para uso individual moderado. La tasa efectiva depende de ejecuciones, proveedor y límites vigentes.
 
 **Sin garantía de antigüedad menor de 15 minutos:** la fuente puede retrasar cotizaciones y los workflows pueden fallar. La API retiene el timestamp de cada símbolo y nunca presenta un dato viejo con timestamp nuevo.
 
