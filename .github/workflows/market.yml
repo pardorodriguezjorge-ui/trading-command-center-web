@@ -1,17 +1,27 @@
-name: Optional hourly market snapshot
+name: Optional licensed market feed
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        description: Refresh quotes only or quotes and daily history
+        options:
+          - quotes
+          - all
+        default: all
   schedule:
-    - cron: '17 * * * 1-5'
+    - cron: '17 13-22 * * 1-5'
+    - cron: '43 23 * * 1-5'
 permissions:
   contents: write
   pages: write
   id-token: write
 concurrency:
-  group: market-snapshot
+  group: licensed-market-feed
   cancel-in-progress: false
 jobs:
   snapshot:
+    # Disabled by default: public redistribution requires a suitable provider license.
     if: vars.ENABLE_MARKET_SYNC == 'true' && vars.MARKET_DATA_PUBLICATION_APPROVED == 'true'
     runs-on: ubuntu-latest
     environment:
@@ -21,18 +31,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node scripts/update-market.mjs
+      - name: Refresh dated quotations
+        run: node scripts/update-market.mjs
         env:
           TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
           MARKET_DATA_PUBLICATION_APPROVED: ${{ vars.MARKET_DATA_PUBLICATION_APPROVED }}
-      - name: Commit public snapshot
+      - name: Refresh extended daily candles at US market close
+        if: github.event.schedule == '43 23 * * 1-5' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'all')
+        run: node scripts/update-history.mjs
+        env:
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+          MARKET_DATA_PUBLICATION_APPROVED: ${{ vars.MARKET_DATA_PUBLICATION_APPROVED }}
+      - name: Commit validated public data
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/market.json
-          git diff --cached --quiet && exit 0
-          git commit -m 'data: refresh validated market snapshot'
-          git push
+          git add -A data
+          if ! git diff --cached --quiet; then
+            git commit -m 'data: refresh dated licensed market data'
+            git push
+          fi
       - name: Prepare public site
         run: |
           mkdir -p dist
